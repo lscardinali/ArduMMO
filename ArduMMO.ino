@@ -45,32 +45,24 @@ const unsigned char PROGMEM tileSheet[] =
 
 const byte worldMap[] = {
   //Dimensions
-  20,
+  16,
   //Data,
-  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+  0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 };
-
-
-
 
 void setup() {
   ab.begin();
@@ -84,22 +76,40 @@ void loop() {
   
   ab.pollButtons();
   
-  
-  if(playerX > 56) {
-    xOffset = (playerX-56);
-  } else if(playerY > 24) {
-    yOffset = (playerY-24);
-  }
-    
   byte dimension = worldMap[0];
-  byte mapSize = dimension * dimension;
-  for(int x = 0; x < mapSize; x++) {
-    byte y = (x/dimension)-yOffset; 
-    int newX = (x - (y*dimension)) -xOffset;
-    sprites.drawOverwrite(newX*16,y*16, tileSheet, worldMap[x+1]);
-   
+  int mapSize = dimension * dimension;
+
+if(playerX >= (dimension*16)-(4*16)) {
+    xOffset = (dimension*16)-(8*16);
+}
+    else if(playerX > 56) {
+    xOffset = playerX-56;
+  } else {
+    xOffset = 0;
   }
 
+  
+if(playerY >= (dimension*16)-(4*16)) {
+    yOffset = (dimension*16)-(2*16);
+}
+    else if(playerY > 24) {
+    yOffset = playerY-24;
+  } else {
+    yOffset = 0;
+  }
+
+  
+
+  
+  yOffset = (playerY > 24 && playerY < (dimension*16)-24) ? playerY-24 : 0;
+  
+    Serial.print(dimension);
+  for(int x = 0; x < mapSize; x++) {
+    Serial.print("for");
+    byte y = (x/dimension); 
+    int newX = (x - (y*dimension)) ;
+    sprites.drawOverwrite((newX*16)-xOffset,(y*16)-yOffset, tileSheet, worldMap[x+1]);
+  }
 
   sprites.drawPlusMask(playerX-xOffset,playerY-yOffset,knightSprites, playerSpriteSwap);
 
@@ -108,23 +118,17 @@ void loop() {
     if(ab.everyXFrames(5)) {
       playerSpriteSwap = !playerSpriteSwap;
     }
-  }
-
-  if (ab.pressed(RIGHT_BUTTON) && playerX + 1 < 112) {
+  } else if (ab.pressed(RIGHT_BUTTON) && playerX + 1 < (dimension*16)-8) {
     playerX += 2;
     if(ab.everyXFrames(5)) {
       playerSpriteSwap = !playerSpriteSwap;
     }
-  }
-
-  if (ab.pressed(UP_BUTTON) && playerY - 1 > 0) {
+  } else if (ab.pressed(UP_BUTTON) && playerY - 1 > 0) {
     playerY -= 2;
     if(ab.everyXFrames(5)) {
       playerSpriteSwap = !playerSpriteSwap;
     }
-  }
-
-  if (ab.pressed(DOWN_BUTTON) && playerY + 2 < 48) {
+  } else if (ab.pressed(DOWN_BUTTON) && playerY + 2 < (dimension*16)-8) {
     playerY += 2;
     if(ab.everyXFrames(5)) {
       playerSpriteSwap = !playerSpriteSwap;
